@@ -61,7 +61,6 @@ class Build(object):
         ).decode("utf-8")
 
         if "17" not in version:
-            print("Java 17 is not installed")
-            exit(1)
+            raise Exception(Fore.RED + "Java 17 is required to run the build.")
 
         print(Fore.GREEN + "✅ Java 17 is installed" + Style.RESET_ALL)

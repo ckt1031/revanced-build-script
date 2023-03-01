@@ -5,9 +5,10 @@ from selectolax.lexbor import LexborHTMLParser
 class APKmirror:
     def __init__(self):
         self.session = requests.Session()
-        self.session.headers[
-            "User-Agent"
-        ] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/110.0"
+        self.session.headers["User-Agent"] = (
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101"
+            + " Firefox/110.0"
+        )
 
     def get_download_page(self, url: str) -> str:
         parser = LexborHTMLParser(self.session.get(url, timeout=10).text)

@@ -2,3 +2,4 @@
 /revanced-dist/
 /revanced-cache/
 options.toml
+/.ruff_cache/

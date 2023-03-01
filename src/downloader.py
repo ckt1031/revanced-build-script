@@ -84,7 +84,10 @@ class Downloader:
 
                         version = max(versions, key=StrictVersion)
 
-                        page = f"https://www.apkmirror.com/apk/{app[app_name]['apkmirror']}-{version}-release/"
+                        page = (
+                            "https://www.apkmirror.com/apk/"
+                            + f"{app[app_name]['apkmirror']}-{version}-release/"
+                        )
 
                         download_page = APKmirror().get_download_page(url=page)
 
