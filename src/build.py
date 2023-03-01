@@ -1,8 +1,10 @@
-import subprocess, os
+import os
+import subprocess
+
 from colorama import Fore, Style
 
-from src.downloader import Downloader
 from src._config import config
+from src.downloader import Downloader
 
 
 class Build(object):

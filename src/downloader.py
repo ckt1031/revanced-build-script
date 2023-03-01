@@ -1,16 +1,17 @@
 import json
-from colorama import Fore, Style
-import os, requests
-from urllib.request import urlretrieve
-from src._config import config
+import os
 from distutils.version import StrictVersion
-from selectolax.lexbor import LexborHTMLParser
-from requests import Session
+
+import requests
+from colorama import Fore, Style
+
+from src._config import config
+from src.apkmirror import APKmirror
 
 
 class Downloader:
     def __init__(self):
-        self.session = Session()
+        self.session = requests.Session()
         self.session.headers["User-Agent"] = "anything"
 
     def _download(self, url: str, name: str) -> str:
@@ -59,41 +60,6 @@ class Downloader:
 
         return downloaded_files
 
-    def get_download_page(self, parser: LexborHTMLParser) -> str:
-        apm = parser.css(".apkm-badge")
-
-        sub_url = ""
-        for is_apm in apm:
-            parent_text = is_apm.parent.parent.text()
-
-            if "APK" in is_apm.text() and (
-                "arm64-v8a" in parent_text
-                or "universal" in parent_text
-                or "noarch" in parent_text
-            ):
-                parser = is_apm.parent
-                sub_url = parser.css_first(".accent_color").attributes["href"]
-                break
-        if sub_url == "":
-            raise Exception("No download page found")
-        download_url = "https://www.apkmirror.com" + sub_url
-        return download_url
-
-    def extract_download_link(self, page: str, app: str) -> None:
-        parser = LexborHTMLParser(self.session.get(page).text)
-
-        resp = self.session.get(
-            "https://www.apkmirror.com"
-            + parser.css_first("a.accent_bg").attributes["href"]
-        )
-        parser = LexborHTMLParser(resp.text)
-
-        href = parser.css_first(
-            "p.notes:nth-child(3) > span:nth-child(1) > a:nth-child(1)"
-        ).attributes["href"]
-
-        self._download("https://www.apkmirror.com" + href, f"{app}.apk")
-
     def download_apk(self, app_name: str):
         # Load from patches.json
         with open(f"./{config['dist_dir']}/patches.json", "r") as patches_file:
@@ -120,25 +86,10 @@ class Downloader:
 
                         page = f"https://www.apkmirror.com/apk/{app[app_name]['apkmirror']}-{version}-release/"
 
-                        parser = LexborHTMLParser(
-                            self.session.get(page, timeout=10).text
-                        )
-                        download_page = self.get_download_page(parser)
+                        download_page = APKmirror().get_download_page(url=page)
 
-                        parser = LexborHTMLParser(self.session.get(download_page).text)
-
-                        resp = self.session.get(
-                            "https://www.apkmirror.com"
-                            + parser.css_first("a.accent_bg").attributes["href"]
-                        )
-                        parser = LexborHTMLParser(resp.text)
-
-                        href = parser.css_first(
-                            "p.notes:nth-child(3) > span:nth-child(1) > a:nth-child(1)"
-                        ).attributes["href"]
+                        href = APKmirror().extract_download_link(download_page)
 
                         filename = f"{app[app_name]['name']}-{version}.apk"
 
-                        return self._download(
-                            "https://www.apkmirror.com" + href, filename
-                        )
+                        return self._download(href, filename)
